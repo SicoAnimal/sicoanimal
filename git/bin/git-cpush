@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source /var/git/local/git-bash-fns
+source bash-fns
 
 branch=$(GIT_BRANCH)
 origin=$1 || $(GIT_REMOTE "$branch")
