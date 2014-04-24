@@ -1,0 +1,80 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+use 5.010;
+
+use Opt::Imistic;
+use Term::ReadLine;
+
+my $branch = shift;
+my $remote = shift;
+
+chomp(my ($current_branch) = grep {s/^\*\s+//} `git branch`);
+ 
+$branch //= $current_branch;
+
+{
+	no warnings 'uninitialized';
+	chomp $current_branch;
+	if ($current_branch eq $branch and not $ARGV{f}) {
+		`git ff`;
+		exit;
+	}
+}
+
+unless ($remote) {
+	chomp(my @branches = `git branch -r | grep /$branch`);
+
+	s/\s+//g for @branches;
+ 
+	if (@branches > 1) {
+		my @remotes;
+ 
+		{
+			my %remotes = map { (split m{/})[0] => 1 } @branches;
+			@remotes = sort keys %remotes;
+		}
+ 
+		# It is possible that none of the branches was of the format remote/master
+		if (! @remotes) {
+			die "No remote found for $branch\nTry git catchup BRANCH TARGET\n";
+		}
+		if (@remotes == 1) {
+			$remote = $remotes[0];
+		}
+		else {
+ 
+			say 'Multiple remotes found. Please select.';
+ 
+			my $i = 0;
+ 
+			say $i++ . ". $_" for @remotes;
+ 
+			my $term = Term::ReadLine->new('git-catchup');
+			my $selection;
+ 
+			{
+				do {
+					$selection = $term->readline;
+					defined $remotes[$selection] and last;
+ 
+					say "Fail less hard";
+				} while not defined $selection;
+			}
+ 
+			$remote = $remotes[$selection];
+		}
+	}
+	else {
+		$remote = $branches[0];
+	}
+}
+ 
+if ($current_branch eq $branch and $ARGV{f}) {
+	my @hard = $ARGV{f} == 2 ? '--hard' : ();
+	system(qw( git reset ), @hard, $remote);
+}
+else {
+	system(qw(git branch -f), $branch, $remote);
+}
