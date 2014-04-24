@@ -1,0 +1,9 @@
+function GIT_BRANCH() {
+	git branch --color=never | grep '^*' | cut -f2 -d' ' | tr -d '\015\012'
+}
+
+function GIT_REMOTE() {
+	branch=$1
+	[[ "$branch" == "" ]] && branch=$(GIT_BRANCH)
+	git config branch.$branch.remote | tr -d '\015\012'
+}
