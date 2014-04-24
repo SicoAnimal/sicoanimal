@@ -30,6 +30,7 @@
 	subf = !git submodule foreach "git fetch -p >/dev/null 2>&1; :" >/dev/null 2>&1
 	subs = "!git submodule foreach \"clear; git lgone; bash || :;\"; clear; git sts; echo -e \"\\a\""
 	tidy-branches = "!git co-rev HEAD -q; for b in $(git branch | grep -v \"*\"); do  git branch -D $b; done"
+	detach = "!git co -q $(git rev-parse HEAD); echo \"You are now in 'detached HEAD' state. You were detatched from...\"; git --no-pager log --oneline --decorate -1"
 	
 [core]
 	autocrlf = input
